@@ -13,11 +13,35 @@ class FSService
         this.existsSync = fs.existsSync;
     }
 
-    async renameFileAsync(tmp,path) {
+    async createParentDirAsync(fpath) {
+        var parentDir = ppath.dirname(fpath);
+        return await this.createDirAsync(parentDir);
+    }
+
+    cleanPath(path) {
+        return path.replace('//','/');
+    }
+
+    async createDirAsync(dir)
+    {
+        if(!await this.existsFileAsync(dir))
+        {
+            fs.mkdirSync(dir, { recursive: true });        
+        }
+        return dir;
+    }
+
+    async renameFileAsync(tmp,path,createDir) {
 
         if(await this.existsFileAsync(path))
         {
             await this.unlinkFileAsync(path);
+        }
+
+        if(createDir)
+        {
+            var parentDir = ppath.dirname(path);
+            await this.createDirAsync(dir);
         }
 
         return await this._renameFileAsync(tmp,path);
@@ -27,10 +51,7 @@ class FSService
         if(createDir)
         {
             var parentDir = ppath.dirname(path);
-            if(!await this.existsFileAsync(parentDir))
-            {
-                fs.mkdirSync(parentDir, { recursive: true });        
-            }
+            await this.createDirAsync(parentDir);
         }
 
         return this._writeFileAsync(path,data);   
@@ -40,7 +61,7 @@ class FSService
         if(createDir)
         {
             var parentDir = ppath.dirname(path);
-            fs.exists(parentDir,exists=>{
+            !fs.exists(parentDir,exists=>{
                 fs.mkdirSync(parentDir, { recursive: true });        
             });
         }
