@@ -1,6 +1,6 @@
 {
   "name": "@nxn/files",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "NXN services for managing files in node.js",
   "main": "file.service.js",
   "scripts": {
