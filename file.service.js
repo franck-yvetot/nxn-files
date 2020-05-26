@@ -11,6 +11,7 @@ class FSService
         this.existsFileAsync = promisify(fs.exists);
         this.unlinkFileAsync = promisify(fs.unlink);
         this.existsSync = fs.existsSync;
+        this.statAsync = promisify(fs.stat);
     }
 
     async createParentDirAsync(fpath) {
@@ -19,9 +20,12 @@ class FSService
     }
 
     cleanPath(path) {
-        return path.replace('//','/');
+        return path.replace(/[/\\]+/g,'/');
     }
 
+    basename(path) {
+        return ppath.basename(path);
+    }
     async createDirAsync(dir)
     {
         if(!await this.existsFileAsync(dir))
@@ -29,6 +33,10 @@ class FSService
             fs.mkdirSync(dir, { recursive: true });        
         }
         return dir;
+    }
+
+    readdir(path,cb) {
+        return fs.readdir(path,cb);
     }
 
     async renameFileAsync(tmp,path,createDir) {
