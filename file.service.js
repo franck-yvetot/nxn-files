@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { promisify } = require('util')
 var ppath = require('path');
+const arraySce = require("@nxn/ext/array.service");
 
 class FSService 
 {
@@ -12,6 +13,7 @@ class FSService
         this.unlinkFileAsync = promisify(fs.unlink);
         this.existsSync = fs.existsSync;
         this.statAsync = promisify(fs.stat);
+        this.readdirAsync = promisify(fs.readdir);
     }
 
     async createParentDirAsync(fpath) {
@@ -33,10 +35,6 @@ class FSService
             fs.mkdirSync(dir, { recursive: true });        
         }
         return dir;
-    }
-
-    readdir(path,cb) {
-        return fs.readdir(path,cb);
     }
 
     async renameFileAsync(tmp,path,createDir) {
@@ -75,6 +73,78 @@ class FSService
         }
 
         return fs.writeFileSync(path,data);   
+    }
+
+    readdir(path,cb) {
+        return fs.readdir(path,cb);
+    }
+
+    async readFiles(filesDir,cb,reg=null,with_content=false,withDirs=false) {
+        filesDir = this.cleanPath(filesDir);
+        let list = [];
+
+        const regex = reg ? 
+            new RegExp(reg,'i')
+            :null;
+
+        fs.readdir(filesDir, async (err, files) => {
+            //handling error
+            if (err) {
+                console.log('Unable to scan directory: ' + err);
+                return list;
+            } 
+            
+            //listing all files using forEach
+            await arraySce.forEachAsync(files, async file => 
+            {
+                // const fpath = filesDir+file;
+                const fpath = path.resolve(filesDir, file);
+                const stat = await fs.statAsync(fpath);
+
+                if (stat && stat.isDirectory())
+                {
+                    if(withDirs)
+                    {
+                        cb(fpath,file,true);
+                        list.push(fpath);
+                    }
+
+                    return this.readFiles(fpath,cb,reg,with_content,withDirs);
+                }
+
+                if(regex && !regex.test(file))
+                    return;
+
+                debug.log("reading file "+fpath);
+
+                try 
+                {
+                    let data;
+                    if(with_content)
+                    {
+                        const data = await this.readFileAsync(fpath);
+                        if(data) 
+                        {
+                            if(cb)
+                                cb(fpath,file,false,data);
+                        }
+                    }
+                    else
+                    {
+                        if(cb)
+                            cb(fpath,file,false);
+                    }
+                    list.push(fpath);
+                } 
+                catch (error) {
+                    debug.error(error.message+error.stack);                            
+                }                        
+            });
+        });   
+    }
+
+    pathinfo(p) {
+        return path.parse(p);
     }
 
 }
