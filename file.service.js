@@ -53,14 +53,14 @@ class FSService
         return await this._renameFileAsync(tmp,path);
     }
 
-    async writeFileAsync(path,data,createDir) {
+    async writeFileAsync(path,data,createDir,append=false) {
         if(createDir)
         {
             var parentDir = ppath.dirname(path);
             await this.createDirAsync(parentDir);
         }
 
-        return this._writeFileAsync(path,data);   
+        return this._writeFileAsync(path,data, { flag : append? 'a' : 'w'});   
     }
 
     writeFile(path,data,createDir) {
