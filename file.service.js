@@ -28,6 +28,10 @@ class FSService
     basename(path) {
         return ppath.basename(path);
     }
+
+    dirname(path) {
+        return ppath.dirname(path)
+    }
     async createDirAsync(dir)
     {
         if(!await this.existsFileAsync(dir))
@@ -53,14 +57,18 @@ class FSService
         return await this._renameFileAsync(tmp,path);
     }
 
-    async writeFileAsync(path,data,createDir,append=false) {
+    async writeFileAsync(path,data,createDir,append=false,encoding='utf8') {
         if(createDir)
         {
             var parentDir = ppath.dirname(path);
             await this.createDirAsync(parentDir);
         }
 
-        return this._writeFileAsync(path,data, { flag : append? 'a' : 'w'});   
+        let config = { flag : append? 'a' : 'w'};
+        if(encoding)
+            config.encoding  = encoding;
+
+        return this._writeFileAsync(path,data, config);   
     }
 
     writeFile(path,data,createDir) {
@@ -140,11 +148,13 @@ class FSService
                     debug.error(error.message+error.stack);                            
                 }                        
             });
-        });   
+        });
+        
+        return list;
     }
 
     pathinfo(p) {
-        return path.parse(p);
+        return ppath.parse(p);
     }
 
 }
