@@ -106,7 +106,7 @@ class FSService
             await arraySce.forEachAsync(files, async file => 
             {
                 // const fpath = filesDir+file;
-                const fpath = path.resolve(filesDir, file);
+                const fpath = ppath.resolve(filesDir, file);
                 const stat = await fs.statAsync(fpath);
 
                 if (stat && stat.isDirectory())
