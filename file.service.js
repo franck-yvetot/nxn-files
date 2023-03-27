@@ -8,6 +8,7 @@ class FSService
     constructor() {
         this.readFileAsync = promisify(fs.readFile);
         this._writeFileAsync = promisify(fs.writeFile);
+        this._appendFileAsync = promisify(fs.appendFile);
         this._renameFileAsync = promisify(fs.rename);
         this.existsFileAsync = promisify(fs.exists);
         this.unlinkFileAsync = promisify(fs.unlink);
@@ -68,7 +69,10 @@ class FSService
         if(encoding)
             config.encoding  = encoding;
 
-        return this._writeFileAsync(path,data, config);   
+        if(append)
+            return this._appendFileAsync(path,data);
+        else
+            return this._writeFileAsync(path,data, config);   
     }
 
     writeFile(path,data,createDir) {
