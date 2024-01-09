@@ -91,7 +91,7 @@ class FSService
         return fs.readdir(path,cb);
     }
 
-    async readFiles(filesDir,cb,reg=null,with_content=false,withDirs=false) {
+    async readFiles(filesDir,cb,reg=null,with_content=false,withDirs=false,orderBy="name") {
         filesDir = this.cleanPath(filesDir);
         let list = [];
 
@@ -105,13 +105,19 @@ class FSService
                 console.log('Unable to scan directory: ' + err);
                 return list;
             } 
+
+            // Ordonner les fichiers par ordre alphabétique
+            if(orderBy == "name")
+            {
+                files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+            }
             
             //listing all files using forEach
             await arraySce.forEachAsync(files, async file => 
             {
                 // const fpath = filesDir+file;
                 const fpath = ppath.resolve(filesDir, file);
-                const stat = await fs.statAsync(fpath);
+                const stat = await this.statAsync(fpath);
 
                 if (stat && stat.isDirectory())
                 {
@@ -127,7 +133,7 @@ class FSService
                 if(regex && !regex.test(file))
                     return;
 
-                debug.log("reading file "+fpath);
+                console.log("reading file "+fpath);
 
                 try 
                 {
@@ -138,18 +144,26 @@ class FSService
                         if(data) 
                         {
                             if(cb)
-                                cb(fpath,file,false,data);
+                            {
+                                const result = cb(fpath,file,false,data);
+                                if (result instanceof Promise)
+                                    await result;
+                            }
                         }
                     }
                     else
                     {
                         if(cb)
-                            cb(fpath,file,false);
+                        {
+                            const result = cb(fpath,file,false);
+                            if (result instanceof Promise)
+                                await result;
+                        }                        
                     }
                     list.push(fpath);
                 } 
                 catch (error) {
-                    debug.error(error.message+error.stack);                            
+                    // debug.error(error.message+error.stack);                            
                 }                        
             });
         });
