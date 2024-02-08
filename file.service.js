@@ -106,7 +106,7 @@ class FileSce
                 return list;
             } 
 
-            // Ordonner les fichiers par ordre alphab�tique
+            // Ordonner les fichiers par ordre alphabétique
             if(orderBy == "name")
             {
                 files = files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
