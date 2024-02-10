@@ -175,7 +175,7 @@ class FileSce
         return ppath.parse(p);
     }
 
-    copyDirSync(src, dest) 
+    copyDirSync(src, dest,force) 
     {
         fs.mkdirSync(dest, { recursive: true });
 
@@ -184,19 +184,27 @@ class FileSce
         files.forEach(file => 
         {
           const current = fs.lstatSync(`${src}/${file}`);
+          const srcF = `${src}/${file}`;
+          const destF = `${dest}/${file}`;
         
           if (current.isDirectory()) 
           {
-            copyDir(`${src}/${file}`, `${dest}/${file}`);
+            this.copyDirSync(srcF, destF);
           } 
           else if (current.isSymbolicLink()) 
           {
-            const symlink = fs.readlinkSync(`${src}/${file}`);
-            fs.symlinkSync(symlink, `${dest}/${file}`);
+            const symlink = fs.readlinkSync(srcF);
+            fs.symlinkSync(symlink, destF);
           } 
           else 
           {
-            fs.copyFileSync(`${src}/${file}`, `${dest}/${file}`);
+            if(!fs.existsSync(destF) || (force=='force')) 
+            {
+                fs.copyFileSync(srcF, destF);
+                console.log("file created : "+destF);
+            }
+            else
+                console.warn("file already exists : "+destF);
           }
         });
     }    
