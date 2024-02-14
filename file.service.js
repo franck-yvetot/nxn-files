@@ -75,12 +75,17 @@ class FileSce
             return this._writeFileAsync(path,data, config);   
     }
 
-    writeFile(path,data,createDir) {
+    writeFile(path,data,createDir) 
+    {
         if(createDir)
         {
             var parentDir = ppath.dirname(path);
-            !fs.exists(parentDir,exists=>{
-                fs.mkdirSync(parentDir, { recursive: true });        
+            fs.access(parentDir, (err) => 
+            {
+                if (err) 
+                {
+                    fs.mkdirSync(parentDir, { recursive: true });                
+                }
             });
         }
 
